@@ -15,6 +15,7 @@ pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
     tera.add_raw_templates(vec![
         ("__zola_builtins/404.html", include_str!("builtins/404.html")),
         ("__zola_builtins/atom.xml", include_str!("builtins/atom.xml")),
+        ("__zola_builtins/cal.ics", include_str!("builtins/cal.ics")),
         ("__zola_builtins/rss.xml", include_str!("builtins/rss.xml")),
         ("__zola_builtins/sitemap.xml", include_str!("builtins/sitemap.xml")),
         ("__zola_builtins/robots.txt", include_str!("builtins/robots.txt")),
@@ -74,6 +75,12 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
                 Some("robots.txt"),
             )?;
         }
+        if theme_path.join("templates").join("cal.ics").exists() {
+            tera_theme.add_template_file(
+                theme_path.join("templates").join("cal.ics"),
+                Some("cal.ics"),
+            )?;
+        }
         tera.extend(&tera_theme)?;
     }
     tera.extend(&ZOLA_TERA)?;
@@ -81,6 +88,9 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     if path.join("templates").join("robots.txt").exists() {
         tera.add_template_file(path.join("templates").join("robots.txt"), Some("robots.txt"))?;
+    }
+    if path.join("templates").join("cal.ics").exists() {
+        tera.add_template_file(path.join("templates").join("cal.ics"), Some("cal.ics"))?;
     }
 
     Ok(tera)

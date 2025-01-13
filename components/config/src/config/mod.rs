@@ -383,7 +383,7 @@ impl Default for Config {
             languages: HashMap::new(),
             generate_feeds: false,
             feed_limit: None,
-            feed_filenames: vec!["atom.xml".to_string()],
+            feed_filenames: vec!["atom.xml".to_string(), "cal.ics".to_string()],
             hard_link_static: false,
             taxonomies: Vec::new(),
             author: None,
