@@ -3,12 +3,14 @@ use serde::{Deserialize, Serialize};
 
 use errors::Result;
 use utils::de::fix_toml_dates;
-use utils::types::InsertAnchor;
+use utils::types::{InsertAnchor, PaginateOptions};
 
 use crate::front_matter::split::RawFrontMatter;
 use crate::SortBy;
 
 static DEFAULT_PAGINATE_PATH: &str = "page";
+
+
 
 /// The front matter of every section
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,7 +34,7 @@ pub struct SectionFrontMatter {
     pub template: Option<String>,
     /// How many pages to be displayed per paginated page. No pagination will happen if this isn't set
     #[serde(skip_serializing)]
-    pub paginate_by: Option<usize>,
+    pub paginate_by: PaginateOptions,
     /// Whether to reverse the order of the pages before segmenting into pagers
     #[serde(skip_serializing)]
     pub paginate_reversed: bool,
@@ -87,10 +89,17 @@ impl SectionFrontMatter {
     }
 
     /// Only applies to section, whether it is paginated or not.
-    pub fn is_paginated(&self) -> bool {
+    pub fn is_paginated_by_num(&self) -> bool {
         match self.paginate_by {
-            Some(v) => v > 0,
-            None => false,
+            PaginateOptions::Num(v) => v > 0,
+            PaginateOptions::None | PaginateOptions::Date => false,
+        }
+    }
+
+    pub fn is_paginated_by_date(&self) -> bool {
+        match self.paginate_by {
+            PaginateOptions::Date => true,
+            PaginateOptions::None | PaginateOptions::Num(_) => false,
         }
     }
 }
@@ -103,7 +112,7 @@ impl Default for SectionFrontMatter {
             sort_by: SortBy::None,
             weight: 0,
             template: None,
-            paginate_by: None,
+            paginate_by: PaginateOptions::None,
             paginate_reversed: false,
             paginate_path: DEFAULT_PAGINATE_PATH.to_string(),
             render: true,

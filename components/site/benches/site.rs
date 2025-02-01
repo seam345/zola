@@ -3,7 +3,7 @@ extern crate test;
 
 use std::env;
 
-use content::Paginator;
+use content::PaginatorDate;
 use site::Site;
 use tempfile::tempdir;
 
@@ -69,7 +69,7 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     site.set_output_path(&public);
     let library = site.library.read().unwrap();
     let section = library.sections.values().collect::<Vec<_>>()[0];
-    let paginator = Paginator::from_section(section, &library);
+    let paginator = PaginatorDate::from_section(section, &library);
 
     b.iter(|| site.render_paginated(Vec::new(), &paginator));
 }

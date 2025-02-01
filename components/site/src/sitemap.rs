@@ -82,13 +82,14 @@ pub fn find_entries<'a>(
             entries.insert(entry);
         }
 
-        if let Some(paginate_by) = s.paginate_by() {
+        if let Some(paginate_by) = s.paginate_by_num() {
             let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {
                 let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
                 entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
             }
         }
+        // todo oh my!
     }
 
     for taxonomy in taxonomies {

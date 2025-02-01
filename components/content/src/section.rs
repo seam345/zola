@@ -10,7 +10,8 @@ use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
 use utils::templates::{render_template, ShortcodeDefinition};
-
+use utils::types::PaginateOptions;
+use utils::types::PaginateOptions::Num;
 use crate::file_info::FileInfo;
 use crate::front_matter::{split_section_content, SectionFrontMatter};
 use crate::library::Library;
@@ -216,13 +217,20 @@ impl Section {
         has_anchor(&self.toc, anchor)
     }
 
-    pub fn paginate_by(&self) -> Option<usize> {
+    pub fn paginate_by_num(&self) -> Option<usize> {
         match self.meta.paginate_by {
-            None => None,
-            Some(x) => match x {
+            PaginateOptions::None | PaginateOptions::Date => None,
+            Num(x) => match x {
                 0 => None,
                 _ => Some(x),
             },
+        }
+    }
+
+    pub fn paginate_by_date(&self) -> bool {
+        match self.meta.paginate_by {
+            PaginateOptions::None | Num(_) => false,
+            PaginateOptions::Date => true,
         }
     }
 

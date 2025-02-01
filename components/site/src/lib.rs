@@ -16,7 +16,7 @@ use libs::tera::{Context, Tera};
 use libs::walkdir::{DirEntry, WalkDir};
 
 use config::{get_config, Config, IndexFormat};
-use content::{Library, Page, Paginator, Section, Taxonomy};
+use content::{Library, Page, Paginator, PaginatorDate, Section, Taxonomy};
 use errors::{anyhow, bail, Result};
 use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
@@ -1130,12 +1130,17 @@ impl Site {
             return Ok(());
         }
 
-        if section.meta.is_paginated() {
+        if section.meta.is_paginated_by_num() {
             self.render_paginated(
                 components,
                 &Paginator::from_section(section, &self.library.read().unwrap()),
             )?;
-        } else {
+        } else if section.meta.is_paginated_by_date() {
+            self.render_paginated_date(
+                components,
+                &PaginatorDate::from_section(section, &self.library.read().unwrap()),
+            )?;
+    } else {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
@@ -1181,6 +1186,45 @@ impl Site {
                 let mut pager_components = index_components.clone();
                 pager_components.push(&paginator.paginate_path);
                 let pager_path = format!("{}", pager.index);
+                pager_components.push(&pager_path);
+                let output = paginator.render_pager(
+                    pager,
+                    &self.config,
+                    &self.tera,
+                    &self.library.read().unwrap(),
+                )?;
+                let content = self.inject_livereload(output);
+
+                if pager.index > 1 {
+                    self.write_content(&pager_components, "index.html", content)?;
+                } else {
+                    self.write_content(&index_components, "index.html", content)?;
+                    self.write_content(
+                        &pager_components,
+                        "index.html",
+                        render_redirect_template(&paginator.permalink, &self.tera)?,
+                    )?;
+                }
+
+                Ok(())
+            })
+            .collect::<Result<()>>()
+    }
+
+    pub fn render_paginated_date<'a>(
+        &self,
+        components: Vec<&'a str>,
+        paginator: &'a PaginatorDate,
+    ) -> Result<()> {
+        let index_components = components.clone();
+
+        paginator
+            .pagers
+            .par_iter()
+            .map(|pager| {
+                let mut pager_components = index_components.clone();
+                pager_components.push(&paginator.paginate_path);
+                let pager_path = format!("{}", pager.pager_path_leaf);
                 pager_components.push(&pager_path);
                 let output = paginator.render_pager(
                     pager,

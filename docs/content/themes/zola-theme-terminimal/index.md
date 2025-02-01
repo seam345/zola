@@ -281,7 +281,7 @@ it in `content/_index.md`:
 ```
 +++
 # number of pages to paginate by
-paginate_by = 2
+paginate_by = { num = 2 }
 
 # sorting order for pagination
 sort_by = "date"

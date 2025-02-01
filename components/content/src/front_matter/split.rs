@@ -128,7 +128,7 @@ Hello
 
     #[test_case(r#"
 +++
-paginate_by = 10
+paginate_by = { num = 10 }
 +++
 Hello
 "#; "toml")]
@@ -141,7 +141,7 @@ Hello
     fn can_split_section_content_valid(content: &str) {
         let (front_matter, content) = split_section_content(Path::new(""), content).unwrap();
         assert_eq!(content, "Hello\n");
-        assert!(front_matter.is_paginated());
+        assert!(front_matter.is_paginated_by_num());
     }
 
     #[test_case(r#"
